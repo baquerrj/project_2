@@ -1,14 +1,11 @@
 #include "ring.h"
+#include "test.h"
+#include <CUnit/CUnit.h>
+#define UNIT_TEST
 
-int main( void )
+int main(void)
 {
-	ring_t ring;
-	if( -1 != init( &ring, 5 ) )
-	{
-		return 0;
-	}
-	else
-	{
-		return -1;
-	}
+	//ring_t *ring;
+	//ring = init(5);
+  test1();
 }

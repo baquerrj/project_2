@@ -2,22 +2,16 @@
 *ring.c
 *Circular buffer
 *ECEN5813
-*
+*REFS:https://stackoverflow.com/questions/2060974/how-to-include-a-dynamic-array-inside-a-struct-in-c 
 *
 */
 #include "ring.h"
 #include "stdlib.h"
-/*
-typedef struct
-{
-    char *Buffer;
-    int Length;
-    int Ini;
-    int Outi;
-    char full;
-    char empty;
-}ring_t;
-*/
+#include "stdio.h"
+#include "test.h"
+#include <CUnit/CUnit.h>
+#define UNIT_TEST 
+
 
 int entries( ring_t *ring )
 {
@@ -34,44 +28,52 @@ int entries( ring_t *ring )
 	return num;
 }
 
-int init( ring_t* rtn, int length )
+ring_t* init( int length )
 {
-	int size = length + sizeof( ring_t );
-//    rtn = malloc( length + sizeof( *ring_t ) );
-    rtn = malloc( size );
-	if( NULL != rtn )
-	{
-		rtn->Buffer = (char*)rtn+1;
-		rtn->Ini = 0;
-		rtn->Outi = 0;
-		rtn->full = 0;
-		rtn->empty = 1;
-		rtn->Length = 0;
-		return 1;
-	}
-	else
-	{
-		return -1;
-	}
+  //struct dyn_array* my_array = malloc(sizeof(struct dyn_array) + 100*sizeof(int));
+ // ring_t *rtn = malloc(length+sizeof(*rtn));
+  ring_t *rtn = malloc(sizeof(*rtn) + length*sizeof(char));
+  if (rtn == NULL)
+  {
+    printf("malloc failed");
+    exit(1);
+  }
+  rtn->Length = length;
+  //rtn->Buffer=rtn+1;
+  rtn->Ini=0;
+  rtn->Outi=0;
+  rtn->full=0;
+  rtn->empty=1;
+  return rtn;
 }
 
 int insert(ring_t *ring, char data)
 {
-    if( !(ring->full) )
+  if (!((data == ' ')||
+       (data >= 'a' && data <= 'z') ||
+       (data >='0' && data <='9')||
+       (data >= 'A' && data <= 'Z')))
     {
-        ring->Buffer[ring->Ini] = data;
-        ring->Ini++;
-		ring->Length++;
-        if( ring->Ini == ( ring->Length + ring->Outi ) )
-		{
-			ring->full = 1;
-		}
-		return 1;
+      return -2; //invalid entry
+    }
+  if( !(ring->full) )
+    {
+      printf("ring-Ini: %d\n\r",ring->Ini); 
+      printf("ring-empty: %d\n\r",ring->empty); 
+      ring->Buffer[ring->Ini] = (char*)data;
+      ring->Ini = (ring->Ini +1) % ring->Length;//if index==Length, index resets to 0
+	
+      if( ring->Ini == ( ring->Length + ring->Outi ) )
+        {
+	  ring->full = 1;
+	}
+	return 1;
+		
     }
     else return -1;
 }
 
-int remove( ring_t *ring, char *data)
+int removeData( ring_t *ring, char *data)
 {
     if( !(ring->empty) )
     {
@@ -83,17 +85,16 @@ int remove( ring_t *ring, char *data)
     else return -1;
 }
 
-#ifdef UNIT_TEST
+//#ifdef UNIT_TEST
 void test1(void)
 {
     ring_t my_ring;
-	ring_t* my_ringp = &my_ring;
-    init(my_ringp, 100);
+    ring_t* my_ringp = &my_ring;
+    my_ringp = init(100);
     for(int i = 0; i < 100; i ++)
     {
-        assert(insert(my_ringp, 'a')== 0);
+        CU_ASSERT(insert(my_ringp, 'a')== 0);
     }
-    assert(insert(my_ringp, 'a')== -1);
-	return void;
+    CU_ASSERT(insert(my_ringp, 'a')== -1);
 }
-#endif
+//#endif

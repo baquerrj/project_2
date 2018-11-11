@@ -10,17 +10,17 @@
 
 typedef struct
 {
-    char *Buffer;
-    int Length;
-    int Ini;
-    int Outi;
-    char full;
-    char empty;
-} ring_t;
+  int Length;
+  int Ini;
+  int Outi;
+  char full;
+  char empty;
+  char **Buffer;
+}ring_t;
 
-int init( ring_t* ring, int length );
+ring_t* init(  int length );
 int insert( ring_t *ring, char data );
-int remove( ring_t *ring, char *data );
+int removeData( ring_t *ring, char *data );
 int entries( ring_t *ring );
 
 
