@@ -113,6 +113,11 @@ void test4(void)
   printf("After removing items, buffer should not be full %u\n\r", my_ringp4->full);
   // Attempt shrink again
   CU_ASSERT(resize(my_ringp4, 90) == 1);
+
+  int elm = entries(my_ringp4);
+  // Should not be able to shrink 
+  CU_ASSERT(resize(my_ringp4, elm-1) == -3);
+  CU_ASSERT(resize(my_ringp4, elm-20) == -3);
 }
 
 void test5(void)
