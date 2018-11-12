@@ -15,7 +15,7 @@ typedef struct
   int Outi;
   char full;
   char empty;
-  char **Buffer;
+  char *Buffer;
 }ring_t;
 
 ring_t* init(  int length );

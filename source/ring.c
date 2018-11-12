@@ -35,10 +35,17 @@ ring_t* init( int length )
   ring_t *rtn = malloc(sizeof(*rtn) + length*sizeof(char));
   if (rtn == NULL)
   {
-    printf("malloc failed");
+    printf("malloc for struct failed\n\r");
     exit(1);
   }
-  rtn->Length = length;
+  rtn->Buffer=  malloc(length+1);
+  if( rtn->Buffer == NULL )
+  {
+    printf("malloc for buffer failed\n\r");
+   exit(1);
+  }
+
+   rtn->Length = length;
   //rtn->Buffer=rtn+1;
   rtn->Ini=0;
   rtn->Outi=0;
@@ -47,8 +54,32 @@ ring_t* init( int length )
   return rtn;
 }
 
+int resize( ring_t* rtn, int length )
+{
+   int oldLength = rtn->Length;
+   if( ( oldLength > length ) && rtn->full )
+   {
+      return -2;
+   }
+
+
+   rtn->Buffer = realloc( rtn->Buffer, length );
+   if( rtn->Buffer == NULL )
+   {
+      return -1;
+   }
+
+   if( ( oldLength < length ) && rtn->full )
+   {
+      rtn->full = 0;
+   }
+   rtn->Length = length;
+   return 1;
+}
+
 int insert(ring_t *ring, char data)
 {
+  
   if (!((data == ' ')||
        (data >= 'a' && data <= 'z') ||
        (data >='0' && data <='9')||
@@ -56,15 +87,18 @@ int insert(ring_t *ring, char data)
     {
       return -2; //invalid entry
     }
+  else ring->empty = 0;
   if( !(ring->full) )
     {
       printf("ring-Ini: %d\n\r",ring->Ini); 
       printf("ring-empty: %d\n\r",ring->empty); 
-      ring->Buffer[ring->Ini] = (char*)data;
-      ring->Ini = (ring->Ini +1) % ring->Length;//if index==Length, index resets to 0
+      printf("Buffer[ring->Ini]: %c at location %p\n\r",ring->Buffer[ring->Ini],&ring->Buffer[ring->Ini]); 
+      ring->Buffer[ring->Ini] = data;
+      ring->Ini = (ring->Ini +1)% ring->Length;//if index==Length, index resets to 0
 	
-      if( ring->Ini == ( ring->Length + ring->Outi ) )
+      if( ( ring->Ini == ring->Outi )&&(!(ring->empty)) )
         {
+          printf("ring is full\n\r");
 	  ring->full = 1;
 	}
 	return 1;
@@ -93,7 +127,7 @@ void test1(void)
     my_ringp = init(100);
     for(int i = 0; i < 100; i ++)
     {
-        CU_ASSERT(insert(my_ringp, 'a')== 0);
+        CU_ASSERT(insert(my_ringp, 'a')== 1);
     }
     CU_ASSERT(insert(my_ringp, 'a')== -1);
 }
