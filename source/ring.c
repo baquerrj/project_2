@@ -54,6 +54,11 @@ int resize( ring_t* rtn, int length )
       return -2;
    }
 
+   if( rtn->numElements > length )
+   {
+     return -3;
+   }
+  
    rtn->Buffer = realloc( rtn->Buffer, length );
    if( rtn->Buffer == NULL )
    {
