@@ -8,7 +8,7 @@
 #include "ring.h"
 #include "stdlib.h"
 #include "stdio.h"
-#include "test.h"
+#include "unittest.h"
 #include <CUnit/CUnit.h>
 #define UNIT_TEST 
 
@@ -120,7 +120,7 @@ int removeData( ring_t *ring, char *data)
 }
 
 //#ifdef UNIT_TEST
-void test1(void)
+/*void test1(void)
 {
     ring_t my_ring;
     ring_t* my_ringp = &my_ring;
@@ -130,5 +130,5 @@ void test1(void)
         CU_ASSERT(insert(my_ringp, 'a')== 1);
     }
     CU_ASSERT(insert(my_ringp, 'a')== -1);
-}
+*///}
 //#endif

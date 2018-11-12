@@ -15,14 +15,16 @@ CFLAGS= -Wall -Werror -Wextra -g -std=c99
 
 INC_DIR= ./include
 SRC_DIR= ./source
+UNIT_DIR= ./Unittest
 RES_DIR= ./res
 OBJS= $(patsubst ./source/%.c, ./res/%.o, $(shell find . -name "*.c"))
+VPATH=./Unittest
 
 util: $(OBJS)
 	mkdir -p ./bin
 	gcc -o ./bin/util $(OBJS) $(CFLAGS) -lcunit -ggdb
 
-$(RES_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/%.h
+$(RES_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/%.h $(UNIT_DIR)/%.c
 	mkdir -p ./res 
 	gcc -I$(INC_DIR) $(CFLAGS) -c -o "$@" "$<" -lcunit -ggdb
 
