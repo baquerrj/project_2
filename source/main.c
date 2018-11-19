@@ -1,3 +1,5 @@
+#ifdef UNIT_TEST
+
 #include "ring.h"
 #include "unittest.h"
 #include <CUnit/CUnit.h>
@@ -22,3 +24,4 @@ int main(void)
     CU_cleanup_registry();
     return 0;
 }
+#endif
