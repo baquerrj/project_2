@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <MKL25Z4.H>
+#include "ring.h"
 
 typedef struct
 {
@@ -27,20 +28,15 @@ typedef struct
 } uart_t;
 
 /* Initialize UART0 to transmit */
-void UART0_init( void );
+void UART0_Tx_init( void );
 
-/* Init function for polling method
- * @param[in] = pointer to UART struct
- */
-void uartInit_blocking( uart_t* uart0 );
+/* Initialize UART0 to transmit */
+void UART0_Rx_init( void );
 
-/* Read function for polling method
- * @param[in] = pointer to UART struct
- */
-void uartRead_bloacking( uart_t* uart0 );
+/* Blocking Transfer */
+void UART0_Tx_blocking( ring_t* p_ring );
 
-/* Write function for polling method
- * @param[in] = pointer to UART struct
- */
-void uartWrite_blocking( uart_t* uart0 );
+/* Blocking Read */
+void UART0_Rx_blocking( ring_t* p_ring );
+
 #endif /* ECEN5813_UART_H_ */
