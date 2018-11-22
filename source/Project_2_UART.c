@@ -33,35 +33,53 @@
  * @brief   Application entry point.
  */
 #include <stdio.h>
-#include "board.h"
-#include "peripherals.h"
-#include "pin_mux.h"
-#include "clock_config.h"
+//#include "board.h"
+//#include "peripherals.h"
+//#include "pin_mux.h"
+//#include "clock_config.h"
 #include "MKL25Z4.h"
-#include "fsl_debug_console.h"
+//#include "fsl_debug_console.h"
 #include "ecen5813_uart.h"
+#include "ring.h"
+#include "LED.h"
 
 void delay( int n );
 
-int main(void) {
+int main( void )
+{
+	LED_init();
+	ring_t* p_ring = ring_init( 10 );
+	ring_insert( p_ring, 'r' );
+	ring_insert( p_ring, 'e' );
+	ring_insert( p_ring, 'a' );
+	ring_insert( p_ring, 'd' );
+	ring_insert( p_ring, 'y' );
 
-	UART0_init();
+	char* data;
 	while (1)
 	{
-		/* Wait for transmit buffer to empty */
-		while(!(UART0->S1 & 0x80));
-		UART0->D = 'Y';		/* Send a char */
+		/* Transmit ready message */
+		UART0_Tx_init();
+		UART0_Tx_blocking( p_ring );
 
-		/* Wait for transmit buffer to empty again */
-		while(!(UART0->S1 & 0x80));
-		UART0->D = 'e';		/* Send 'e' */
+		/* TX won't return until ring buffer is empty */
+		UART0_Rx_init();
+		UART0_Rx_blocking( p_ring );
 
-		/* Wait for transmit buffer to empty again */
-		while(!(UART0->S1 & 0x80));
-		UART0->D = 's';		/* Send 'e' */
-
-		/* Delay 2 ms - leaving a time gap between messages */
-		delay(2);
+		/* Pop last entry - if ! - exit program */
+		if( !(p_ring->empty) )
+		{
+			ring_removeData( p_ring, data );
+			if ( '!' == *data )
+			{
+				break;
+			}
+			else
+			{
+				/* Last entry wasn't ! - so re-insert and keep going with the loop */
+				ring_insert( p_ring, data );
+			}
+		}
 	}
 #if 0
   	/* Init board hardware. */
