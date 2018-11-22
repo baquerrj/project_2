@@ -19,11 +19,11 @@ typedef struct
   char *Buffer;
 } ring_t;
 
-ring_t* init(  int length );
-int insert( ring_t *ring, char data );
-int removeData( ring_t *ring, char *data );
-int entries( ring_t *ring );
-int resize( ring_t* rtn, int length );
+ring_t* ring_init(  int length );
+int ring_insert( ring_t *ring, char data );
+int ring_removeData( ring_t *ring, char *data );
+int ring_entries( ring_t *ring );
+int ring_resize( ring_t* rtn, int length );
 
 
 #endif

@@ -10,12 +10,12 @@
 #include "stdio.h"
 
 
-int entries( ring_t *ring )
+int ring_entries( ring_t *ring )
 {
 	return ring->numElements;
 }
 
-ring_t* init( int length )
+ring_t* ring_init( int length )
 {
 	//struct dyn_array* my_array = malloc(sizeof(struct dyn_array) + 100*sizeof(int));
 	// ring_t *rtn = malloc(length+sizeof(*rtn));
@@ -41,7 +41,7 @@ ring_t* init( int length )
 	return rtn;
 }
 
-int resize( ring_t* rtn, int length )
+int ring_resize( ring_t* rtn, int length )
 {
 	int oldLength = rtn->Length;
 	if( ( oldLength > length ) && rtn->full )
@@ -72,7 +72,7 @@ int resize( ring_t* rtn, int length )
    return 1;
 }
 
-int insert(ring_t *ring, char data)
+int ring_insert(ring_t *ring, char data)
 {
 	if (!((data == ' ')||
 			(data >= 'a' && data <= 'z') ||
@@ -99,7 +99,7 @@ int insert(ring_t *ring, char data)
   else return -1;
 }
 
-int removeData( ring_t *ring, char *data)
+int ring_removeData( ring_t *ring, char *data)
 {
 	if( !(ring->empty) )
   {
