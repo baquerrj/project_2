@@ -6,11 +6,9 @@
 */
 #include <MKL25Z4.H>
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include "ring.h"
 #include "uart_driver.h"
-
+#include "LED.h"
 uart_handle_t uart_handle;
 
 #ifdef _POLLING_
@@ -47,6 +45,7 @@ int main (void)
 int main( void )
 {
 	MCG->C4 = 0x20;
+	LED_init();
 	uart_handle.Instance = UART0;
 	uart_handle.myRing 	 = ring_init( 200 );
 	uart_handle.state 	 = UART_STATE_RESET;
@@ -70,6 +69,7 @@ int main( void )
 		{
 			UART0_TX_transmit_char( &uart_handle );
 		}
+		LED_toggle();
 	}
 	return 1;
 }
@@ -77,7 +77,6 @@ int main( void )
 /* UART0 interrupt handler */
 void UART0_IRQHandler( void )
 {
-
 	if( uart_handle.Instance->S1 & TDRE )
 	{
 		if( !uart_handle.myRing->empty)
@@ -89,10 +88,6 @@ void UART0_IRQHandler( void )
 	{
 		UART0_RX_char(&uart_handle);
 	}
-
 	return;
 }
 #endif
-
-
-
