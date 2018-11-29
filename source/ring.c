@@ -2,121 +2,132 @@
 *ring.c
 *Circular buffer
 *ECEN5813
-*REFS:https://stackoverflow.com/questions/2060974/how-to-include-a-dynamic-array-inside-a-struct-in-c 
+*REFS:https://stackoverflow.com/questions/2060974/how-to-include-a-dynamic-array-inside-a-struct-in-c
 *
 */
 #include "ring.h"
 #include "stdlib.h"
 #include "stdio.h"
-#include "unittest.h"
-#include <CUnit/CUnit.h>
-#define UNIT_TEST 
 
-extern char DATA[100];
-
-int entries( ring_t *ring )
+/* Returns pointer to Ring Buffer with buffer
+ * size specified by length input.
+ * @param	length:	Buffer Size
+ * @ret:	  			Pointer to initialized ring buffer
+ */
+ring_t* ring_init( int length )
 {
-  return ring->numElements;
+	ring_t *ring = malloc(sizeof(*ring) + length*sizeof(char));
+	if (ring == NULL)
+	{
+		printf("malloc for struct failed\n\r");
+		exit(1);
+	}
+	ring->Buffer=  malloc(length+1);
+	if( ring->Buffer == NULL )
+	{
+		printf("malloc for buffer failed\n\r");
+		exit(1);
+	}
+	ring->Length = length;
+	ring->Ini=0;
+	ring->Outi=0;
+	ring->numElements=0;
+	ring->full=0;
+	ring->empty=1;
+	return ring;
 }
 
-ring_t* init( int length )
+/* Removes data from circular buffer
+ * @param		*ring: Pointer to ring buffer
+ * @param		*data: Pointer to char to place popped data
+ * @retVal	1 if successful
+ * 					-1 if not successful
+ */
+int ring_insert(ring_t *ring, char data)
 {
-  //struct dyn_array* my_array = malloc(sizeof(struct dyn_array) + 100*sizeof(int));
- // ring_t *rtn = malloc(length+sizeof(*rtn));
-  ring_t *rtn = malloc(sizeof(*rtn) + length*sizeof(char));
-  if (rtn == NULL)
-  {
-    printf("malloc for struct failed\n\r");
-    exit(1);
-  }
-  rtn->Buffer=  malloc(length+1);
-  if( rtn->Buffer == NULL )
-  {
-    printf("malloc for buffer failed\n\r");
-   exit(1);
-  }
-
-   rtn->Length = length;
-  //rtn->Buffer=rtn+1;
-  rtn->Ini=0;
-  rtn->Outi=0;
-  rtn->numElements=0;
-  rtn->full=0;
-  rtn->empty=1;
-  return rtn;
+	if( !(ring->full) )
+	{
+		ring->numElements++;
+		ring->Buffer[ring->Ini] = data;
+		ring->Ini = (ring->Ini +1)% ring->Length; //if index==Length, index resets to 0
+		ring->empty = 0;
+		//if( ( ring->Ini == ring->Outi )&&(!(ring->empty)) )
+		if( ring->numElements == ring->Length && !(ring->empty) )
+		{
+			ring->full = 1;
+		}
+		return 1;
+	}
+  else return -1;
 }
 
-int resize( ring_t* rtn, int length )
+/* Returns number of elements contained in ring buffer
+ * @param		*ring:	Pointer to ring buffer
+ * @ret:		ring->numElements:	Number of elements
+ */
+int ring_removeData( ring_t *ring, char *data)
 {
-   int oldLength = rtn->Length;
-   if( ( oldLength > length ) && rtn->full )
-   {
-      return -2;
-   }
+	if( !(ring->empty) )
+  {
+		ring->numElements--;
+		*data = ring->Buffer[ring->Outi];
+		ring->Outi = (ring->Outi + 1) % ring->Length;
+		//if(ring->Outi == ring->Ini)
+		ring->full = 0;
+		if( ring->numElements == 0 )
+		{
+			ring->full = 0;
+			ring->empty = 1;
+		}
+		return 1;
+  }
+	else return -1;
+}
 
-   if( rtn->numElements > length )
-   {
-     return -3;
-   }
-  
-   rtn->Buffer = realloc( rtn->Buffer, length );
-   if( rtn->Buffer == NULL )
+/* Returns number of elements contained in ring buffer
+ * @param		*ring:	Pointer to ring buffer
+ * @ret:		ring->numElements:	Number of elements
+ */
+int ring_entries( ring_t *ring )
+{
+	return ring->numElements;
+}
+
+/* Resizes input ring buffer
+ * @param 	*ring:	Pointer to ring buffer to resize
+ * @param		length:	New length of ring buffer
+ * @retVal	1 if successful
+ * 					-1 memory reallocation fails (realloc returns NULL)
+ * 					-2 New length is less than original and buffer is full
+ * 					-3 New length cannot hold elements currently in ring buffer
+ */
+int ring_resize( ring_t* ring, int length )
+{
+	int oldLength = ring->Length;
+	if( ( oldLength > length ) && ring->full )
+  {
+		return -2;
+  }
+
+	if( ring->numElements > length )
+  {
+		return -3;
+  }
+
+   ring->Buffer = realloc( ring->Buffer, length );
+   if( ring->Buffer == NULL )
    {
       return -1;
    }
 
-   if( ( oldLength < length ) && rtn->full )
+   if( ( oldLength < length ) && ring->full )
    {
-     if( rtn->Outi == rtn->Ini )
+  	 if( ring->Outi == ring->Ini )
      {
-       rtn->Ini =  rtn->Ini + oldLength;
+  		 ring->Ini =  ring->Ini + oldLength;
      }
-     rtn->full = 0;
+  	 ring->full = 0;
    }
-   rtn->Length = length;
+   ring->Length = length;
    return 1;
 }
-
-int insert(ring_t *ring, char data)
-{
-    if (!((data == ' ')||
-       (data >= 'a' && data <= 'z') ||
-       (data >='0' && data <='9')||
-       (data >= 'A' && data <= 'Z')))
-    {
-        return -2; //invalid entry
-    }
-    else ring->empty = 0;
-
-    if( !(ring->full) )
-    {
-      ring->numElements++;
-      ring->Buffer[ring->Ini] = data;
-      ring->Ini = (ring->Ini +1)% ring->Length; //if index==Length, index resets to 0
-	
-      if( ( ring->Ini == ring->Outi )&&(!(ring->empty)) )
-        {
-          printf("ring is full\n\r");
-    ring->full = 1;
-	}
-	return 1;
-		
-    }
-    else return -1;
-}
-
-int removeData( ring_t *ring, char *data)
-{
-    if( !(ring->empty) )
-    {
-      ring->numElements--;
-      *data = ring->Buffer[ring->Outi];
-      ring->Outi = (ring->Outi + 1) % ring->Length;
-      printf("ring->Out1= %u\n\r ring->Ini = %u\n\r", ring->Outi, ring->Ini);
-      ring->full = 0;
-      if(ring->Outi == ring->Ini) ring->empty = 1;
-      return 1;
-    }
-    else return -1;
-}
-
